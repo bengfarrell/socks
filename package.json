@@ -1,0 +1,16 @@
+{
+  "name": "socks",
+  "version": "0.0.1",
+  "type": "module",
+  "dependencies": {},
+  "devDependencies": {
+    "@web/dev-server": "^0.1.29",
+    "ws": "^8.4.0"
+  },
+  "scripts": {
+    "start-demo-server": "node ./demo/demo-server.js",
+    "serve": "wds --node-resolve --open=./demo/index.html --watch",
+    "blenderpublish": "cp -R ./blender/socks \"/Users/farrell/Library/Application Support/Blender/3.0/scripts/addons\"",
+    "blender": "npm run blenderpublish && /Applications/Blender.app/Contents/MacOS/Blender"
+  }
+}
