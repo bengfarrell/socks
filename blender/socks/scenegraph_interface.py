@@ -12,28 +12,70 @@ class SceneGraphInterface:
             print('Command not found:', cmd['command'])
 
     def update(self, cmd):
-        if 'translate' in cmd:
-            self.translate(cmd['target'], cmd['translate'])
+        targetNames = cmd['target']
+        targets = self.getTargets(targetNames)
 
-        if 'scale' in cmd:
-            self.translate(cmd['target'], cmd['scale'])
+        if targets == None:
+            return
 
-        if 'rotate' in cmd:
-            self.translate(cmd['target'], cmd['rotate'])
+        for target in targets:
+            if 'translateto' in cmd:
+                self.transform(cmd['translateto'], target.location, False)
+            elif 'translateby' in cmd:
+                self.transform(cmd['translateby'], target.location, True)
 
+            if 'scaleto' in cmd:
+                self.transform(cmd['scaleto'], target.scale, False)
+            elif 'scaleby' in cmd:
+                self.transform(cmd['scaleby'], target.scale, True)
 
-    def translate(self, target, obj):
+            if 'rotateto' in cmd:
+                # TODO: Support other rotation modes
+                target.rotation_mode = 'XYZ'
+                self.transform(cmd['rotateto'], target.rotation_euler, False)
+            elif 'rotateby' in cmd:
+                # TODO: Support other rotation modes
+                target.rotation_mode = 'XYZ'
+                self.transform(cmd['rotateby'], target.rotation_euler, True)
+
+    def getTargets(self, names):
+        selectionIndx = []
+        selection = [o for o in bpy.context.scene.objects if o.select_get()]
+        for indx, name in enumerate(names):
+            if name == '__$current_selection__':
+                selectionIndx.append(indx)
+                del names[indx]
+            else:
+                names[indx] = bpy.data.objects[name]
+
+        for indx in selectionIndx:
+            while len(selection) > 0:
+                names.insert(indx, selection.pop())
+
+        return names
+
+    def transform(self, obj, target, additive):
         if 'x' in obj:
-            bpy.data.objects[target].location[0] += obj['x']
+            if additive:
+                target[0] += obj['x']
+            else:
+                target[0] = obj['x']
 
         if 'y' in obj:
-            bpy.data.objects[target].location[1] += obj['y']
+            if additive:
+                target[1] += obj['y']
+            else:
+                target[1] = obj['y']
 
         if 'z' in obj:
-            bpy.data.objects[target].location[2] += obj['z']
+            if additive:
+                target[2] += obj['z']
+            else:
+                target[2] = obj['z']
 
-    def scale(self, obj):
-        print('scale')
+        if 'w' in obj:
+            if additive:
+                target[3] += obj['w']
+            else:
+                target[3] = obj['w']
 
-    def rotate(self, obj):
-        print('rotate')

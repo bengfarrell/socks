@@ -3,7 +3,7 @@ import { BlenderCommand } from './blender-command'
 import { EventEmitter } from './eventemitter.js';
 
 export class Connection extends EventEmitter {
-    constructor(host = 'localhost', port = 8137) {
+    constructor(host = 'localhost', port = 8138) {
         super();
         this.connected = false;
         this.socket = new WebSocket(`ws://${host}:${port}`);

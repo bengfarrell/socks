@@ -1,23 +1,38 @@
 export const CURRENT_SELECTION = '__$current_selection__';
 
-export const createTranslate = (x, y, z) => {
+export const translateTo = (x, y, z) => {
     return {
-        type: 'translate',
-        x, y, z
+        'translateto': { x, y, z }
     }
 }
 
-export const createScale = (x, y, z) => {
+export const translateBy = (x, y, z) => {
     return {
-        type: 'scale',
-        x, y, z
+        'translateby': { x, y, z }
     }
 }
 
-export const createRotation = (x, y, z, w, order = 'xyz') => {
+export const scaleTo = (x, y, z) => {
     return {
-        type: 'rotation',
-        x, y, z, w
+        'scaleto': { x, y, z }
+    }
+}
+
+export const scaleBy = (x, y, z) => {
+    return {
+        'scaleby': { x, y, z }
+    }
+}
+
+export const rotateTo = (x, y, z, w, order = 'xyz') => {
+    return {
+        'rotateto': { x, y, z }
+    }
+}
+
+export const rotateBy = (x, y, z, w, order = 'xyz') => {
+    return {
+        'rotateby': { x, y, z }
     }
 }
 
@@ -35,15 +50,19 @@ export class BlenderCommand {
     }
 
     /**
-     * @param objName - Blender object to update
+     * @param objName - Blender object to update (array of names, or single string name)
      * @param props - Property values to update
      * @param keyframe - Keyframe
      * @param template - if named Blender object does not exist, clone from a Blender object named this
      */
     static update(objName, props, keyframe = undefined, template = undefined) {
+        let target = objName;
+        if (!Array.isArray(objName)) {
+            target = [objName];
+        }
         return JSON.stringify({
             command: 'update',
-            target: objName,
+            target,
             ...props,
             keyframe,
             template
@@ -55,9 +74,13 @@ export class BlenderCommand {
      * @returns {{name}}
      */
     static delete(objName) {
+        let target = objName;
+        if (!Array.isArray(objName)) {
+            target = objName;
+        }
         return {
             command: 'delete',
-            name: objName,
+            target
         }
     }
 }

@@ -1,37 +1,78 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Simple Demo Client</title>
+    <title>Translation Demo</title>
 </head>
 <body>
-    <span>hi</span>
+    transform:
+    <select>
+        <option>translate</option>
+        <option>scale</option>
+        <option>rotate</option>
+    </select>
+    <p>
+        Use arrow keys to move. Hold down shift for z-axis. Hit R key to return to center
+        <span id="last-command"></span>
+    </p>
 </body>
 
 <script type="module">
     import { Connection } from '../src/connection';
-    import { BlenderCommand } from '../src/blender-command';
+    import { BlenderCommand, translateBy, translateTo, scaleBy, rotateBy, CURRENT_SELECTION } from '../src/blender-command';
 
     const conn = new Connection();
 
-    setTimeout( () => {
-        conn.send(BlenderCommand.update('Cube', { translate: { x: 5 } }));
-    }, 5000)
-
     document.addEventListener('keydown', (event) => {
+        const delta = [0 , 0,  0];
         switch (event.key) {
             case "ArrowLeft":
-                conn.send(BlenderCommand.update('Cube', { translate: { x: -.1 } }));
+                if (event.shiftKey) {
+                    delta[2] -= -0.1;
+                } else {
+                    delta[0] -= -0.1;
+                }
                 break;
             case "ArrowRight":
-                conn.send(BlenderCommand.update('Cube', { translate: { x: .1 } }));
+                if (event.shiftKey) {
+                    delta[2] += 0.1;
+                } else {
+                    delta[0] += 0.1;
+                }
                 break;
             case "ArrowUp":
-                conn.send(BlenderCommand.update('Cube', { translate: { y: -.1 } }));
+                if (event.shiftKey) {
+                    delta[2] -= 0.1;
+                } else {
+                    delta[1] -= 0.1;
+                }
                 break;
             case "ArrowDown":
-                conn.send(BlenderCommand.update('Cube', { translate: { y: .1 } }));
+                if (event.shiftKey) {
+                    delta[2] += 0.1;
+                } else {
+                    delta[1] += 0.1;
+                }
                 break;
+            case "r":
+                conn.send(BlenderCommand.update(CURRENT_SELECTION, { ...translateTo(0, 0, 0) }));
+                document.getElementById('last-command').innerText = 'reset to origin';
         }
+
+        switch(document.querySelector('select').value) {
+            case 'translate':
+                conn.send(BlenderCommand.update(CURRENT_SELECTION,  { ...translateBy(...delta) }));
+                break;
+
+            case 'rotate':
+                conn.send(BlenderCommand.update(CURRENT_SELECTION,  { ...rotateBy(...delta) }));
+                break;
+
+            case 'scale':
+                conn.send(BlenderCommand.update(CURRENT_SELECTION,  { ...scaleBy(...delta) }));
+                break;
+
+        }
+        document.getElementById('last-command').innerText = 'Move ' + delta;
 
     });
 </script>
