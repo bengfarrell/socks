@@ -1,0 +1,59 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Cloning Demo</title>
+</head>
+<body>
+ <p>Use the arrow keys to create a clone and move the default blender cube. Hold down shift to move in the Z direction</p>
+</body>
+
+<script type="module">
+    import { Connection } from '../src/connection';
+    import { BlenderCommand, translateBy, translateTo, scaleBy, rotateBy, CURRENT_SELECTION } from '../src/blender-command';
+
+    const conn = new Connection();
+
+    let counter = 0;
+    const move = 3;
+    const delta = [0 , 0,  0];
+    document.addEventListener('keydown', (event) => {
+        switch (event.key) {
+            case "ArrowLeft":
+                if (event.shiftKey) {
+                    delta[2] -= move;
+                } else {
+                    delta[0] -= move;
+                }
+                counter ++;
+                break;
+            case "ArrowRight":
+                if (event.shiftKey) {
+                    delta[2] += move;
+                } else {
+                    delta[0] += move;
+                }
+                counter ++;
+                break;
+            case "ArrowUp":
+                if (event.shiftKey) {
+                    delta[2] -= move;
+                } else {
+                    delta[1] -= move;
+                }
+                counter ++;
+                break;
+            case "ArrowDown":
+                if (event.shiftKey) {
+                    delta[2] += move;
+                } else {
+                    delta[1] += move;
+                }
+                counter ++;
+                break;
+        }
+
+        conn.send(BlenderCommand.update(`cubey-${counter}`,  { ...translateTo(...delta) }, undefined, CURRENT_SELECTION ));
+
+    });
+</script>
+</html>

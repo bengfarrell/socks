@@ -13,7 +13,8 @@ class SceneGraphInterface:
 
     def update(self, cmd):
         targetNames = cmd['target']
-        targets = self.getTargets(targetNames)
+        template = cmd['template']
+        targets = self.getTargets(targetNames, template)
 
         if targets == None:
             return
@@ -38,7 +39,7 @@ class SceneGraphInterface:
                 target.rotation_mode = 'XYZ'
                 self.transform(cmd['rotateby'], target.rotation_euler, True)
 
-    def getTargets(self, names):
+    def getTargets(self, names, template):
         selectionIndx = []
         selection = [o for o in bpy.context.scene.objects if o.select_get()]
         for indx, name in enumerate(names):
@@ -46,7 +47,21 @@ class SceneGraphInterface:
                 selectionIndx.append(indx)
                 del names[indx]
             else:
-                names[indx] = bpy.data.objects[name]
+                if name in bpy.data.objects:
+                    # object is found, add to list
+                    names[indx] = bpy.data.objects[name]
+                elif template:
+                    # object not found, clone via template
+                    if template == '__$current_selection__':
+                        src_obj = selection[0]
+                    else:
+                        src_obj = bpy.data.objects[template]
+                    new_obj = src_obj.copy()
+                    new_obj.name = name
+                    new_obj.data = src_obj.data.copy()
+                    new_obj.animation_data_clear()
+                    bpy.context.collection.objects.link(new_obj)
+                    names[indx] = new_obj
 
         for indx in selectionIndx:
             while len(selection) > 0:
