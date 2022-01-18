@@ -4,6 +4,7 @@ import { styles } from './connector.css';
 import { Connection } from '../../connection';
 import { BlenderCommand } from '../../blender-command';
 import { SocketEvent } from './connectionevent';
+import { BlenderEvent } from '../../blender-event';
 
 @customElement('socks-connector')
 export class ConnectorComponent extends LitElement {
@@ -87,6 +88,12 @@ export class ConnectorComponent extends LitElement {
           this.port = Number((event.currentTarget as HTMLInputElement)?.value);
         }}
       />
+        <button ?disabled=${!this.connection?.connected} @click=${() => {
+          this.connection?.send(BlenderCommand.requestScene())
+        }}>Get Scene</button>
+        <button ?disabled=${!this.connection?.connected} @click=${() => {
+          this.connection?.send(BlenderCommand.requestSelection())
+        }}>Get Selection</button>
         ${this.showActivity ? html`<br /><span id='activity'>${this.lastActivity}</span>` : undefined}`;
   }
 
@@ -112,11 +119,7 @@ export class ConnectorComponent extends LitElement {
       this.lastActivity = `Connected to ${host}:${port}`;
       this.requestUpdate('status');
       this.requestUpdate('lastActivity');
-
-      const event: SocketEvent = new SocketEvent(SocketEvent.OPEN, { bubbles: true, composed: true, cancelable: true});
-      event.component = this;
-      event.connection = this.connection;
-      this.dispatchEvent(event);
+      this.sendEvent(SocketEvent.OPEN);
     });
 
     this.connection.addEventListener('close', () => {
@@ -124,6 +127,7 @@ export class ConnectorComponent extends LitElement {
       this.lastActivity = `Connection closed`;
       this.requestUpdate('status');
       this.requestUpdate('lastActivity');
+      this.sendEvent(SocketEvent.CLOSE);
     });
 
     this.connection.addEventListener('error', (e: Event) => {
@@ -136,6 +140,18 @@ export class ConnectorComponent extends LitElement {
       });
       this.requestUpdate('status');
       this.requestUpdate('lastActivity');
+      this.sendEvent(SocketEvent.ERROR);
     });
+
+    this.connection.addEventListener(BlenderEvent.BLENDER_MESSAGE, (e: BlenderEvent) => {
+      this.dispatchEvent(e as Event);
+    });
+  }
+
+  sendEvent(type: string) {
+    const event: SocketEvent = new SocketEvent(type, { bubbles: true, composed: true, cancelable: true});
+    event.component = this;
+    event.connection = this.connection;
+    this.dispatchEvent(event);
   }
 }

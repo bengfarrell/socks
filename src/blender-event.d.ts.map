@@ -1,0 +1,1 @@
+{"version":3,"file":"blender-event.d.ts","sourceRoot":"","sources":["blender-event.ts"],"names":[],"mappings":"AAAA,qBAAa,YAAa,SAAQ,KAAK;IACnC,OAAc,eAAe,EAAE,MAAM,CAAoB;IAElD,KAAK,EAAE,GAAG,CAAC;gBAEN,IAAI,EAAE,MAAM,EAAE,KAAK,EAAE,GAAG;CAKvC"}

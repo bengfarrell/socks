@@ -1,5 +1,5 @@
 import bpy
-from .socks_server import (ServerController, JSONEncoder, broadcast)
+from .socks_server import (ServerController, JSONEncoder, broadcast, scenegraph)
 
 class Start_Server_Op(bpy.types.Operator):
     bl_idname = "view3d.start_socks_server"
@@ -25,26 +25,6 @@ class Send_SceneGraph_Op(bpy.types.Operator):
     bl_description = "Posts Blender scene graph to socket connections"
 
     def execute(self, context):
-        for scene in bpy.data.scenes:
-            data = self.get_scene(scene)
-            if data:
-                broadcast(self.stringify(("scene", scene.name, data)))
-
+        scenegraph.sendScene()
         return {'FINISHED'}
-
-    def get_scene(self, scene):
-        return {
-            "camera": scene.camera and scene.camera.name,
-            "fps": scene.render.fps / scene.render.fps_base,
-            "frame": scene.frame_current,
-            "frameEnd": scene.frame_end,
-            "frameStart": scene.frame_start,
-            "gravity": scene.gravity,
-            "objects": list(object.name for object in scene.objects),
-            "timelineMarkers": list(scene.timeline_markers),
-            "world": scene.world and scene.world.name
-        }
-
-    def stringify(self, data):
-        return JSONEncoder(separators=(",", ":")).encode(data)
 

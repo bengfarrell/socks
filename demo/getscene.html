@@ -1,0 +1,20 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Transform with arrow keys Demo</title>
+</head>
+<body>
+<socks-connector showactivity></socks-connector>
+<script type="module" src="../src/components/connector/index.js"></script>
+<script type="module">
+    import { SocketEvent } from '../src/components/connector/connectionevent.js';
+
+    let conn;
+    document.body.addEventListener(SocketEvent.MESSAGE, (event) => {
+        console.log(event.scene);
+    });
+
+</script>
+</body>
+
+</html>

@@ -10,6 +10,8 @@ from ws4py.server.wsgiutils import WebSocketWSGIApplication
 
 from .scenegraph_interface import SceneGraphInterface
 
+scenegraph = SceneGraphInterface()
+
 class JSONEncoder(json.JSONEncoder):
     def default(self, obj):
         # print(type(obj))
@@ -141,8 +143,6 @@ def broadcast(message):
 
 
 class WebSocketApp(_WebSocket):
-    scenegraph = SceneGraphInterface()
-
     def opened(self):
         sockets.append(self)
 
@@ -152,7 +152,7 @@ class WebSocketApp(_WebSocket):
     def received_message(self, message):
         data = json.loads(message.data.decode(message.encoding))
         for cmd in data:
-            self.scenegraph.doCommand(cmd)
+            scenegraph.doCommand(cmd)
 
 
 class ServerController:
@@ -196,3 +196,11 @@ class ServerController:
         ServerController.serverIsRunning = False
         print("Stop Socks server")
         return True
+
+    def send(data):
+        broadcast(stringify(data))
+
+    def stringify(self, data):
+        return JSONEncoder(separators=(",", ":")).encode(data)
+
+scenegraph.socketApp = ServerController

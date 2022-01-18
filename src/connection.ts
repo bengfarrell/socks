@@ -40,7 +40,7 @@ export class Connection extends EventEmitter {
     }
 
     onMessage(event: MessageEvent) {
-        this.dispatchEvent(new BlenderEvent({ scene: event.data }));
+        this.dispatchEvent(new BlenderEvent(BlenderEvent.BLENDER_MESSAGE,{ bubbles: true, composed: true, cancellable: true, scene: event.data }));
     }
 
     send(commands: BlenderCommand | BlenderCommand[]) {

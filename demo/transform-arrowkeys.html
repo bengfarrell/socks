@@ -14,67 +14,68 @@
         Use arrow keys to move. Hold down shift for z-axis. Hit R key to return to center
         <span id="last-command"></span>
     </p>
+
+    <socks-connector showactivity></socks-connector>
+    <script type="module" src="../src/components/connector/index.js"></script>
+    <script type="module">
+        import { SocketEvent } from '../src/components/connector/connectionevent.js';
+        import { BlenderCommand, CURRENT_SELECTION } from '../src/blender-command';
+
+        let conn;
+        document.body.addEventListener(SocketEvent.OPEN, (event) => {
+            conn = event.connection;
+        });
+
+       document.addEventListener('keydown', (event) => {
+            const delta = [0 , 0,  0];
+            switch (event.key) {
+                case "ArrowLeft":
+                    if (event.shiftKey) {
+                        delta[2] -= -0.1;
+                    } else {
+                        delta[0] -= -0.1;
+                    }
+                    break;
+                case "ArrowRight":
+                    if (event.shiftKey) {
+                        delta[2] += 0.1;
+                    } else {
+                        delta[0] += 0.1;
+                    }
+                    break;
+                case "ArrowUp":
+                    if (event.shiftKey) {
+                        delta[2] -= 0.1;
+                    } else {
+                        delta[1] -= 0.1;
+                    }
+                    break;
+                case "ArrowDown":
+                    if (event.shiftKey) {
+                        delta[2] += 0.1;
+                    } else {
+                        delta[1] += 0.1;
+                    }
+                    break;
+                case "r":
+                    conn.send(BlenderCommand.update({ target: CURRENT_SELECTION, transforms: [ { transform: 'translate', x: 0, y: 0, z: 0 } ]}));
+                    document.getElementById('last-command').innerText = 'reset to origin';
+            }
+
+            conn.send(BlenderCommand.update(
+                {
+                    target: CURRENT_SELECTION, transforms:
+                        [
+                            {
+                                transform: document.querySelector('select').value,
+                                x: delta[0], y: delta[1], z: delta[2],
+                                relative: true
+                            }
+                        ]
+                }));
+            document.getElementById('last-command').innerText = 'Move ' + delta;
+        });
+    </script>
 </body>
 
-<socks-connector showactivity></socks-connector>
-<script type="module" src="../src/components/connector/index.js"></script>
-<script type="module">
-    import { SocketEvent } from '../src/components/connector/connectionevent.js';
-    import { BlenderCommand, CURRENT_SELECTION } from '../src/blender-command';
-
-    let conn;
-    document.body.addEventListener(SocketEvent.OPEN, (event) => {
-        conn = event.connection;
-    });
-
-   document.addEventListener('keydown', (event) => {
-        const delta = [0 , 0,  0];
-        switch (event.key) {
-            case "ArrowLeft":
-                if (event.shiftKey) {
-                    delta[2] -= -0.1;
-                } else {
-                    delta[0] -= -0.1;
-                }
-                break;
-            case "ArrowRight":
-                if (event.shiftKey) {
-                    delta[2] += 0.1;
-                } else {
-                    delta[0] += 0.1;
-                }
-                break;
-            case "ArrowUp":
-                if (event.shiftKey) {
-                    delta[2] -= 0.1;
-                } else {
-                    delta[1] -= 0.1;
-                }
-                break;
-            case "ArrowDown":
-                if (event.shiftKey) {
-                    delta[2] += 0.1;
-                } else {
-                    delta[1] += 0.1;
-                }
-                break;
-            case "r":
-                conn.send(BlenderCommand.update({ target: CURRENT_SELECTION, transforms: [ { transform: 'translate', x: 0, y: 0, z: 0 } ]}));
-                document.getElementById('last-command').innerText = 'reset to origin';
-        }
-
-        conn.send(BlenderCommand.update(
-            {
-                target: CURRENT_SELECTION, transforms:
-                    [
-                        {
-                            transform: document.querySelector('select').value,
-                            x: delta[0], y: delta[1], z: delta[2],
-                            relative: true
-                        }
-                    ]
-            }));
-        document.getElementById('last-command').innerText = 'Move ' + delta;
-    });
-</script>
 </html>

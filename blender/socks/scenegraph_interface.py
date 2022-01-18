@@ -1,15 +1,34 @@
 import bpy
 
 class SceneGraphInterface:
+    socketApp = None
+
     def doCommand(self, cmd):
         if cmd['command'] == 'update':
             self.update(cmd)
+
+        elif cmd['command'] == 'sceneinfo':
+            self.sendScene()
+
+        elif cmd['command'] == 'selectioninfo':
+            self.sendSelection()
 
         elif cmd['command'] == 'delete':
             print("letter is Grapes")
 
         else:
             print('Command not found:', cmd['command'])
+
+    def sendScene(self):
+        for scene in bpy.data.scenes:
+            data = self.get_scene(scene)
+            if data:
+                self.socketApp.send(data)
+
+    def sendSelection(self):
+        data = self.get_selection()
+        if data:
+            self.socketApp.send(data)
 
     def update(self, cmd):
         try:
@@ -23,7 +42,6 @@ class SceneGraphInterface:
             if targets == None:
                 return
 
-            print(targets)
             for target in targets:
                 if 'transforms' in cmd:
                     for transform in cmd['transforms']:
@@ -78,7 +96,6 @@ class SceneGraphInterface:
             return []
 
     def transform(self, obj, target):
-        print(target)
         try:
             acceptedProps = ['x', 'y', 'z', 'w']
             for prop in obj:
@@ -92,3 +109,21 @@ class SceneGraphInterface:
         except NameError as e:
             print(e)
 
+
+    def get_selection(self):
+        return [o.name for o in bpy.context.scene.objects if o.select_get()]
+
+    def get_scene(self, scene):
+        return {
+            "scene": scene.name,
+            "camera": scene.camera and scene.camera.name,
+            "fps": scene.render.fps / scene.render.fps_base,
+            "frame": scene.frame_current,
+            "frameEnd": scene.frame_end,
+            "frameStart": scene.frame_start,
+            "gravity": scene.gravity,
+            "objects": list(object.name for object in scene.objects),
+            "timelineMarkers": list(scene.timeline_markers),
+            "world": scene.world and scene.world.name,
+            "selected": self.get_selection()
+        }
