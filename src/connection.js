@@ -26,7 +26,16 @@ export class Connection extends EventEmitter {
         this.dispatchEvent(e);
     }
     onMessage(event) {
-        this.dispatchEvent(new BlenderEvent(BlenderEvent.BLENDER_MESSAGE, { bubbles: true, composed: true, cancellable: true, scene: event.data }));
+        const data = JSON.parse(event.data);
+        const params = {};
+        if (data.scene) {
+            params.scene = data;
+            params.selected = data.selected || [];
+        }
+        else {
+            params.selected = data || [];
+        }
+        this.dispatchEvent(new BlenderEvent(BlenderEvent.BLENDER_MESSAGE, { bubbles: true, composed: true, cancellable: true, ...params }));
     }
     send(commands) {
         if (this.connected) {

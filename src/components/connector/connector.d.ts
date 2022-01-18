@@ -1,6 +1,7 @@
 import { LitElement } from 'lit';
 import { Connection } from '../../connection';
 import { BlenderCommand } from '../../blender-command';
+import { SceneView } from '../sceneview/sceneview';
 export declare class ConnectorComponent extends LitElement {
     /**
      * host to use
@@ -23,6 +24,7 @@ export declare class ConnectorComponent extends LitElement {
      */
     get status(): string;
     protected statusEl?: HTMLElement;
+    protected sceneViewEl?: SceneView;
     protected connection?: Connection;
     protected _status: 'connected' | 'pending' | 'none';
     protected lastActivity?: string;

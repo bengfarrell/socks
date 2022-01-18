@@ -27,8 +27,7 @@ class SceneGraphInterface:
 
     def sendSelection(self):
         data = self.get_selection()
-        if data:
-            self.socketApp.send(data)
+        self.socketApp.send(data)
 
     def update(self, cmd):
         try:
@@ -48,14 +47,21 @@ class SceneGraphInterface:
                         if 'transform' in transform:
                             if transform['transform'] == 'translate':
                                 self.transform(transform, target.location)
+                                if 'keyframe' in cmd:
+                                    target.keyframe_insert(data_path="location", frame=cmd['keyframe'])
 
                             if transform['transform'] == 'scale':
                                 self.transform(transform, target.scale)
+                                if 'keyframe' in cmd:
+                                    target.keyframe_insert(data_path="scale", frame=cmd['keyframe'])
 
                             if transform['transform'] == 'rotate':
                                 # TODO: Support other rotation modes
                                 target.rotation_mode = 'XYZ'
                                 self.transform(transform, target.rotation_euler)
+                                if 'keyframe' in cmd:
+                                    target.keyframe_insert(data_path="rotation_euler", frame=cmd['keyframe'])
+
         except NameError as e:
             print('Name Error for', e)
         except KeyError as e:

@@ -87,7 +87,8 @@ let ConnectorComponent = class ConnectorComponent extends LitElement {
             var _a;
             (_a = this.connection) === null || _a === void 0 ? void 0 : _a.send(BlenderCommand.requestSelection());
         }}>Get Selection</button>
-        ${this.showActivity ? html `<br /><span id='activity'>${this.lastActivity}</span>` : undefined}`;
+        ${this.showActivity ? html `<br /><span id='activity'>${this.lastActivity}</span>` : undefined}
+        <socks-sceneview></socks-sceneview>`;
     }
     send(commands) {
         var _a;
@@ -136,6 +137,14 @@ let ConnectorComponent = class ConnectorComponent extends LitElement {
             this.sendEvent(SocketEvent.ERROR);
         });
         this.connection.addEventListener(BlenderEvent.BLENDER_MESSAGE, (e) => {
+            if (this.sceneViewEl) {
+                if (e.scene) {
+                    this.sceneViewEl.scene = e.scene;
+                }
+                if (e.selected) {
+                    this.sceneViewEl.selected = e.selected;
+                }
+            }
             this.dispatchEvent(e);
         });
     }
@@ -164,6 +173,9 @@ __decorate([
 __decorate([
     query('#status')
 ], ConnectorComponent.prototype, "statusEl", void 0);
+__decorate([
+    query('socks-sceneview')
+], ConnectorComponent.prototype, "sceneViewEl", void 0);
 ConnectorComponent = __decorate([
     customElement('socks-connector')
 ], ConnectorComponent);

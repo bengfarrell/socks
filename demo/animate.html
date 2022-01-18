@@ -1,59 +1,85 @@
 <html>
 <head>
-    <meta charset="UTF-8">
-    <title>Cloning Demo</title>
+    <meta charSet='UTF-8'>
+    <title>Transform with arrow keys Demo</title>
 </head>
 <body>
-<p>Use the arrow keys to create a clone and move the default blender cube. Hold down shift to move in the Z direction</p>
-</body>
+transform:
+<select>
+    <option>translate</option>
+    <option>scale</option>
+    <option>rotate</option>
+</select>
+<p>
+    Use arrow keys to move. Hold down shift for z-axis. Hit R key to return to center
+    <span id='last-command'></span>
+</p>
 
-<script type="module">
-    import { Connection } from '../src/connection';
-    import { BlenderCommand, translateBy, translateTo, scaleBy, rotateBy, CURRENT_SELECTION } from '../src/blender-command';
+<socks-connector showactivity></socks-connector>
+<script type='module' src='../src/components/connector/index.js'></script>
+<script type='module'>
+    import { SocketEvent } from '../src/components/connector/connectionevent.js';
+    import { BlenderCommand, CURRENT_SELECTION } from '../src/blender-command';
 
-    const conn = new Connection();
+    let conn;
+    document.body.addEventListener(SocketEvent.OPEN, (event) => {
+        conn = event.connection;
+    });
 
-    let counter = 0;
-    const move = 3;
-    const delta = [0 , 0,  0];
+    let keyframe = 0;
     document.addEventListener('keydown', (event) => {
+        const delta = [0, 0, 0];
         switch (event.key) {
             case "ArrowLeft":
                 if (event.shiftKey) {
-                    delta[2] -= move;
+                    delta[2] -= -0.1;
                 } else {
-                    delta[0] -= move;
+                    delta[0] -= -0.1;
                 }
-                counter ++;
+                keyframe += 1;
                 break;
             case "ArrowRight":
                 if (event.shiftKey) {
-                    delta[2] += move;
+                    delta[2] += 0.1;
                 } else {
-                    delta[0] += move;
+                    delta[0] += 0.1;
                 }
-                counter ++;
+                keyframe += 1;
                 break;
             case "ArrowUp":
                 if (event.shiftKey) {
-                    delta[2] -= move;
+                    delta[2] -= 0.1;
                 } else {
-                    delta[1] -= move;
+                    delta[1] -= 0.1;
                 }
-                counter ++;
+                keyframe += 1;
                 break;
             case "ArrowDown":
                 if (event.shiftKey) {
-                    delta[2] += move;
+                    delta[2] += 0.1;
                 } else {
-                    delta[1] += move;
+                    delta[1] += 0.1;
                 }
-                counter ++;
+                keyframe += 1;
                 break;
         }
 
-        conn.send(BlenderCommand.update(`cubey-${counter}`,  { ...translateTo(...delta) }, undefined, CURRENT_SELECTION ) );
-
+        conn.send(BlenderCommand.update(
+            {
+                target: CURRENT_SELECTION,
+                keyframe,
+                transforms:
+                    [
+                        {
+                            transform: document.querySelector('select').value,
+                            x: delta[0], y: delta[1], z: delta[2],
+                            relative: true,
+                        },
+                    ]
+            }));
+        document.getElementById('last-command').innerText = 'Move ' + delta + ' keyframe: ' + keyframe;
     });
 </script>
+</body>
+
 </html>

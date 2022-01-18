@@ -3,9 +3,18 @@ export class BlenderEvent extends Event {
 
     public scene: any;
 
+    public selected?: string[];
+
     constructor(type: string, props: any) {
         super(type, props);
-        this.scene = props.scene;
+
+        if (props.scene) {
+            this.scene = props.scene;
+        }
+
+        if (props.selected) {
+            this.selected = props.selected;
+        }
     }
 
 }

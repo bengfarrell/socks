@@ -5,6 +5,7 @@ import { Connection } from '../../connection';
 import { BlenderCommand } from '../../blender-command';
 import { SocketEvent } from './connectionevent';
 import { BlenderEvent } from '../../blender-event';
+import { SceneView } from '../sceneview/sceneview';
 
 @customElement('socks-connector')
 export class ConnectorComponent extends LitElement {
@@ -42,6 +43,9 @@ export class ConnectorComponent extends LitElement {
 
   @query('#status')
   protected statusEl?: HTMLElement;
+
+  @query('socks-sceneview')
+  protected sceneViewEl?: SceneView;
 
   protected connection?: Connection;
 
@@ -94,7 +98,8 @@ export class ConnectorComponent extends LitElement {
         <button ?disabled=${!this.connection?.connected} @click=${() => {
           this.connection?.send(BlenderCommand.requestSelection())
         }}>Get Selection</button>
-        ${this.showActivity ? html`<br /><span id='activity'>${this.lastActivity}</span>` : undefined}`;
+        ${this.showActivity ? html`<br /><span id='activity'>${this.lastActivity}</span>` : undefined}
+        <socks-sceneview></socks-sceneview>`;
   }
 
   public send(commands: BlenderCommand[] | BlenderCommand) {
@@ -144,6 +149,14 @@ export class ConnectorComponent extends LitElement {
     });
 
     this.connection.addEventListener(BlenderEvent.BLENDER_MESSAGE, (e: BlenderEvent) => {
+      if (this.sceneViewEl) {
+        if (e.scene) {
+          this.sceneViewEl.scene = e.scene;
+        }
+        if (e.selected) {
+          this.sceneViewEl.selected = e.selected;
+        }
+      }
       this.dispatchEvent(e as Event);
     });
   }
