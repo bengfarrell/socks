@@ -1,7 +1,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Translation Demo</title>
+    <title>Transform with arrow keys Demo</title>
 </head>
 <body>
     transform:
@@ -16,13 +16,18 @@
     </p>
 </body>
 
+<socks-connector showactivity></socks-connector>
+<script type="module" src="../src/components/connector/index.js"></script>
 <script type="module">
-    import { Connection } from '../src/connection';
-    import { BlenderCommand, translateBy, translateTo, scaleBy, rotateBy, CURRENT_SELECTION } from '../src/blender-command';
+    import { SocketEvent } from '../src/components/connector/connectionevent.js';
+    import { BlenderCommand, CURRENT_SELECTION } from '../src/blender-command';
 
-    const conn = new Connection();
+    let conn;
+    document.body.addEventListener(SocketEvent.OPEN, (event) => {
+        conn = event.connection;
+    });
 
-    document.addEventListener('keydown', (event) => {
+   document.addEventListener('keydown', (event) => {
         const delta = [0 , 0,  0];
         switch (event.key) {
             case "ArrowLeft":
@@ -54,26 +59,22 @@
                 }
                 break;
             case "r":
-                conn.send(BlenderCommand.update(CURRENT_SELECTION, { ...translateTo(0, 0, 0) }));
+                conn.send(BlenderCommand.update({ target: CURRENT_SELECTION, transforms: [ { transform: 'translate', x: 0, y: 0, z: 0 } ]}));
                 document.getElementById('last-command').innerText = 'reset to origin';
         }
 
-        switch(document.querySelector('select').value) {
-            case 'translate':
-                conn.send(BlenderCommand.update(CURRENT_SELECTION,  { ...translateBy(...delta) }));
-                break;
-
-            case 'rotate':
-                conn.send(BlenderCommand.update(CURRENT_SELECTION,  { ...rotateBy(...delta) }));
-                break;
-
-            case 'scale':
-                conn.send(BlenderCommand.update(CURRENT_SELECTION,  { ...scaleBy(...delta) }));
-                break;
-
-        }
+        conn.send(BlenderCommand.update(
+            {
+                target: CURRENT_SELECTION, transforms:
+                    [
+                        {
+                            transform: document.querySelector('select').value,
+                            x: delta[0], y: delta[1], z: delta[2],
+                            relative: true
+                        }
+                    ]
+            }));
         document.getElementById('last-command').innerText = 'Move ' + delta;
-
     });
 </script>
 </html>

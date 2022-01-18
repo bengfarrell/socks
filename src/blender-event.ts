@@ -1,5 +1,7 @@
 export class BlenderEvent extends Event {
-    constructor(props) {
+    public scene: any;
+
+    constructor(props: any) {
         super(props);
         this.scene = props.scene;
     }

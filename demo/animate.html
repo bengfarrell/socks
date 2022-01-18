@@ -4,19 +4,14 @@
     <title>Cloning Demo</title>
 </head>
 <body>
- <p>Use the arrow keys to create a clone and move the default blender cube. Hold down shift to move in the Z direction</p>
+<p>Use the arrow keys to create a clone and move the default blender cube. Hold down shift to move in the Z direction</p>
 </body>
 
-<socks-connector showactivity></socks-connector>
-<script type="module" src="../src/components/connector/index.js"></script>
 <script type="module">
-    import { SocketEvent } from '../src/components/connector/connectionevent.js';
-    import { BlenderCommand, CURRENT_SELECTION } from '../src/blender-command';
+    import { Connection } from '../src/connection';
+    import { BlenderCommand, translateBy, translateTo, scaleBy, rotateBy, CURRENT_SELECTION } from '../src/blender-command';
 
-    let conn;
-    document.body.addEventListener(SocketEvent.OPEN, (event) => {
-        conn = event.connection;
-    });
+    const conn = new Connection();
 
     let counter = 0;
     const move = 3;
@@ -57,17 +52,7 @@
                 break;
         }
 
-        conn.send(BlenderCommand.update(
-            {
-                target: `cubey-${counter}`,
-                template: CURRENT_SELECTION,
-                transforms: [
-                        {
-                            transform: 'translate',
-                            x: delta[0], y: delta[1], z: delta[2],
-                        }
-                    ]
-            }));
+        conn.send(BlenderCommand.update(`cubey-${counter}`,  { ...translateTo(...delta) }, undefined, CURRENT_SELECTION ) );
 
     });
 </script>

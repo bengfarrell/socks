@@ -151,7 +151,8 @@ class WebSocketApp(_WebSocket):
 
     def received_message(self, message):
         data = json.loads(message.data.decode(message.encoding))
-        self.scenegraph.doCommand(data)
+        for cmd in data:
+            self.scenegraph.doCommand(cmd)
 
 
 class ServerController:

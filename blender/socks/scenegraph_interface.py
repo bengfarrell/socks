@@ -12,85 +12,83 @@ class SceneGraphInterface:
             print('Command not found:', cmd['command'])
 
     def update(self, cmd):
-        targetNames = cmd['target']
-        template = cmd['template']
-        targets = self.getTargets(targetNames, template)
+        try:
+            targetNames = cmd['target']
+            template = None
+            if 'template' in cmd:
+                template = cmd['template']
 
-        if targets == None:
-            return
+            targets = self.getTargets(targetNames, template)
 
-        for target in targets:
-            if 'translateto' in cmd:
-                self.transform(cmd['translateto'], target.location, False)
-            elif 'translateby' in cmd:
-                self.transform(cmd['translateby'], target.location, True)
+            if targets == None:
+                return
 
-            if 'scaleto' in cmd:
-                self.transform(cmd['scaleto'], target.scale, False)
-            elif 'scaleby' in cmd:
-                self.transform(cmd['scaleby'], target.scale, True)
+            print(targets)
+            for target in targets:
+                if 'transforms' in cmd:
+                    for transform in cmd['transforms']:
+                        if 'transform' in transform:
+                            if transform['transform'] == 'translate':
+                                self.transform(transform, target.location)
 
-            if 'rotateto' in cmd:
-                # TODO: Support other rotation modes
-                target.rotation_mode = 'XYZ'
-                self.transform(cmd['rotateto'], target.rotation_euler, False)
-            elif 'rotateby' in cmd:
-                # TODO: Support other rotation modes
-                target.rotation_mode = 'XYZ'
-                self.transform(cmd['rotateby'], target.rotation_euler, True)
+                            if transform['transform'] == 'scale':
+                                self.transform(transform, target.scale)
+
+                            if transform['transform'] == 'rotate':
+                                # TODO: Support other rotation modes
+                                target.rotation_mode = 'XYZ'
+                                self.transform(transform, target.rotation_euler)
+        except NameError as e:
+            print('Name Error for', e)
+        except KeyError as e:
+            print('Key Error for', e)
 
     def getTargets(self, names, template):
-        selectionIndx = []
-        selection = [o for o in bpy.context.scene.objects if o.select_get()]
-        for indx, name in enumerate(names):
-            if name == '__$current_selection__':
-                selectionIndx.append(indx)
-                del names[indx]
-            else:
-                if name in bpy.data.objects:
-                    # object is found, add to list
-                    names[indx] = bpy.data.objects[name]
-                elif template:
-                    # object not found, clone via template
-                    if template == '__$current_selection__':
-                        src_obj = selection[0]
+        try:
+            selectionIndx = []
+            selection = [o for o in bpy.context.scene.objects if o.select_get()]
+            for indx, name in enumerate(names):
+                if name == '__$current_selection__':
+                    selectionIndx.append(indx)
+                    del names[indx]
+                else:
+                    if name in bpy.data.objects:
+                        # object is found, add to list
+                        names[indx] = bpy.data.objects[name]
+                    elif template:
+                        # object not found, clone via template
+                        if template == '__$current_selection__':
+                            src_obj = selection[0]
+                        else:
+                            src_obj = bpy.data.objects[template]
+                        new_obj = src_obj.copy()
+                        new_obj.name = name
+                        new_obj.data = src_obj.data.copy()
+                        new_obj.animation_data_clear()
+                        bpy.context.collection.objects.link(new_obj)
+                        names[indx] = new_obj
+
+            for indx in selectionIndx:
+                while len(selection) > 0:
+                    names.insert(indx, selection.pop())
+
+            return names
+        except NameError as e:
+            print(e)
+            return []
+
+    def transform(self, obj, target):
+        print(target)
+        try:
+            acceptedProps = ['x', 'y', 'z', 'w']
+            for prop in obj:
+                if prop in acceptedProps:
+                    indx = acceptedProps.index(prop)
+                    if 'relative' in obj and obj['relative'] == True:
+                        target[indx] += obj[prop]
                     else:
-                        src_obj = bpy.data.objects[template]
-                    new_obj = src_obj.copy()
-                    new_obj.name = name
-                    new_obj.data = src_obj.data.copy()
-                    new_obj.animation_data_clear()
-                    bpy.context.collection.objects.link(new_obj)
-                    names[indx] = new_obj
+                        target[indx] = obj[prop]
 
-        for indx in selectionIndx:
-            while len(selection) > 0:
-                names.insert(indx, selection.pop())
-
-        return names
-
-    def transform(self, obj, target, additive):
-        if 'x' in obj:
-            if additive:
-                target[0] += obj['x']
-            else:
-                target[0] = obj['x']
-
-        if 'y' in obj:
-            if additive:
-                target[1] += obj['y']
-            else:
-                target[1] = obj['y']
-
-        if 'z' in obj:
-            if additive:
-                target[2] += obj['z']
-            else:
-                target[2] = obj['z']
-
-        if 'w' in obj:
-            if additive:
-                target[3] += obj['w']
-            else:
-                target[3] = obj['w']
+        except NameError as e:
+            print(e)
 

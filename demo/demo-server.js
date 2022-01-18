@@ -1,14 +1,15 @@
-import WebSocket, { WebSocketServer } from 'ws';
+import { WebSocketServer } from 'ws';
 
 const wss = new WebSocketServer({
-    port: 8080,
+    port: 8138,
 });
 
 const sockets = [];
 
-wss.on('connection', function connection(ws, req) {
+wss.on('connection', (ws) => {
     sockets.push(ws);
-    ws.on('message', function message(data, isBinary) {
+    ws.on('message', (data, isBinary) => {
+        // eslint-disable-next-line no-console
         console.log('on message', JSON.parse(data.toString()), isBinary)
     });
 });

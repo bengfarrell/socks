@@ -1,11 +1,11 @@
 export class EventEmitter {
-    listeners = [];
+    protected listeners: { type: string, callback: Function }[] = [];
 
     /**
      * aAdd event listener.
      */
-    addEventListener(type, callback) {
-        const listener = { type, callback };
+    addEventListener(type: string, callback: Function) {
+        const listener: { type: string, callback: Function } = { type, callback };
         this.listeners.push(listener);
         return listener;
     }
@@ -14,7 +14,7 @@ export class EventEmitter {
      * Remove event listener.
      * @param listener - Event listener to remove.
      */
-    removeEventListener(listener) {
+    removeEventListener(listener: { type: string, callback: Function }) {
         for (let c = 0; c < this.listeners.length; c++) {
             if (listener === this.listeners[c]) {
                 this.listeners.splice(c, 1);
@@ -27,7 +27,7 @@ export class EventEmitter {
      * Remove event listeners.
      * @param listeners - List of event listeners to remove.
      */
-    removeEventListeners(listeners) {
+    removeEventListeners(listeners: { type: string, callback: Function }[]) {
         listeners.forEach((listener) => {
             this.removeEventListener(listener);
         });
@@ -35,13 +35,14 @@ export class EventEmitter {
 
     /**
      * Trigger event.
-     * @param ce - Custom event to dispatch.
+     * @param event to dispatch
      */
-    dispatchEvent(e) {
+    dispatchEvent(e: Event) {
         const listeners = this.listeners.slice();
         listeners.forEach(function(l) {
-            if (ce.type === l.type) {
-                l.callback.apply(this, [ce]);
+            if (e.type === l.type) {
+                // @ts-ignore
+                l.callback.apply(this, [e]);
             }
         });
     }
