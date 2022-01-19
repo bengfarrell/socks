@@ -1,4 +1,6 @@
 import bpy
+import time
+from mathutils import Vector
 
 class SceneGraphInterface:
     socketApp = None
@@ -45,6 +47,20 @@ class SceneGraphInterface:
                 if 'transforms' in cmd:
                     for transform in cmd['transforms']:
                         if 'transform' in transform:
+                            if transform['transform'] == 'origin':
+                                oldLoc = target.location
+                                newLoc = self.transform(transform, Vector([target.location[0], target.location[1], target.location[2]]))
+                                for vert in target.data.vertices:
+                                    vert.co[0] -= newLoc[0] - oldLoc[0]
+                                    vert.co[1] -= newLoc[1] - oldLoc[1]
+                                    vert.co[2] -= newLoc[2] - oldLoc[2]
+                                obj.location = newLoc
+                                # The below is probably what we should do, but I can't get it working
+                                # saved_location = bpy.context.scene.cursor.location
+                                # bpy.context.scene.cursor.location = Vector((5.0, 0.0, 0.0))
+                                # bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
+                                # bpy.context.scene.cursor.location = saved_location
+
                             if transform['transform'] == 'translate':
                                 self.transform(transform, target.location)
                                 if 'keyframe' in cmd:
@@ -91,6 +107,8 @@ class SceneGraphInterface:
                         new_obj.animation_data_clear()
                         bpy.context.collection.objects.link(new_obj)
                         names[indx] = new_obj
+                        # Blender gets crashy when we clone to quickly
+                        time.sleep(.1)
 
             for indx in selectionIndx:
                 while len(selection) > 0:
@@ -111,6 +129,7 @@ class SceneGraphInterface:
                         target[indx] += obj[prop]
                     else:
                         target[indx] = obj[prop]
+            return target
 
         except NameError as e:
             print(e)
