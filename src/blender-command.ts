@@ -14,6 +14,10 @@ export interface Scale extends Transform {
     transform: 'scale';
 }
 
+export interface Origin extends Transform {
+    transform: 'origin';
+}
+
 export interface Rotate extends Transform {
     transform: 'rotate';
     w?: number;
@@ -30,7 +34,7 @@ export interface UpdateParams {
     target: string | string[],
 
     // list of transforms to apply in order to object
-    transforms: (Translate | Scale | Rotate) | (Translate | Scale | Rotate)[],
+    transforms: (Translate | Scale | Rotate | Origin) | (Translate | Scale | Rotate | Origin)[],
 
     // keyframe if animating
     keyframe?: number,
@@ -46,7 +50,7 @@ interface UpdateCommand {
     target: string[],
 
     // list of transforms to apply in order to object
-    transforms: (Translate | Scale | Rotate)[],
+    transforms: (Translate | Scale | Rotate | Origin)[],
 
     // keyframe if animating
     keyframe?: number,

@@ -1,1 +1,1 @@
-import './connector';
+export * from './connector';
