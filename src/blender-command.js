@@ -10,6 +10,14 @@ export class BlenderCommand {
             command: 'selectioninfo',
         };
     }
+    static clone(params) {
+        const command = {
+            command: 'update',
+            target: Array.isArray(params.target) ? params.target : [params.target],
+            template: params.template,
+        };
+        return command;
+    }
     static update(params) {
         const command = {
             command: 'update',

@@ -3,7 +3,7 @@ import { customElement, property, query } from 'lit/decorators.js';
 import { styles } from './connector.css';
 import { Connection } from '../../connection';
 import { BlenderCommand } from '../../blender-command';
-import { SocketEvent } from './connectionevent';
+import { ConnectionEvent } from './connectionevent';
 import { BlenderEvent } from '../../blender-event';
 import { SceneView } from '../sceneview/sceneview';
 
@@ -124,7 +124,7 @@ export class ConnectorComponent extends LitElement {
       this.lastActivity = `Connected to ${host}:${port}`;
       this.requestUpdate('status');
       this.requestUpdate('lastActivity');
-      this.sendEvent(SocketEvent.OPEN);
+      this.sendEvent(ConnectionEvent.OPEN);
     });
 
     this.connection.addEventListener('close', () => {
@@ -132,7 +132,7 @@ export class ConnectorComponent extends LitElement {
       this.lastActivity = `Connection closed`;
       this.requestUpdate('status');
       this.requestUpdate('lastActivity');
-      this.sendEvent(SocketEvent.CLOSE);
+      this.sendEvent(ConnectionEvent.CLOSE);
     });
 
     this.connection.addEventListener('error', (e: Event) => {
@@ -145,7 +145,7 @@ export class ConnectorComponent extends LitElement {
       });
       this.requestUpdate('status');
       this.requestUpdate('lastActivity');
-      this.sendEvent(SocketEvent.ERROR);
+      this.sendEvent(ConnectionEvent.ERROR);
     });
 
     this.connection.addEventListener(BlenderEvent.BLENDER_MESSAGE, (e: BlenderEvent) => {
@@ -162,7 +162,7 @@ export class ConnectorComponent extends LitElement {
   }
 
   sendEvent(type: string) {
-    const event: SocketEvent = new SocketEvent(type, { bubbles: true, composed: true, cancelable: true});
+    const event: ConnectionEvent = new ConnectionEvent(type, { bubbles: true, composed: true, cancelable: true});
     event.component = this;
     event.connection = this.connection;
     this.dispatchEvent(event);

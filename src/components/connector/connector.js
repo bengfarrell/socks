@@ -1,15 +1,10 @@
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
+import { __decorate } from "tslib";
 import { html, LitElement } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 import { styles } from './connector.css';
 import { Connection } from '../../connection';
 import { BlenderCommand } from '../../blender-command';
-import { SocketEvent } from './connectionevent';
+import { ConnectionEvent } from './connectionevent';
 import { BlenderEvent } from '../../blender-event';
 let ConnectorComponent = class ConnectorComponent extends LitElement {
     constructor() {
@@ -113,14 +108,14 @@ let ConnectorComponent = class ConnectorComponent extends LitElement {
             this.lastActivity = `Connected to ${host}:${port}`;
             this.requestUpdate('status');
             this.requestUpdate('lastActivity');
-            this.sendEvent(SocketEvent.OPEN);
+            this.sendEvent(ConnectionEvent.OPEN);
         });
         this.connection.addEventListener('close', () => {
             this._status = 'none';
             this.lastActivity = `Connection closed`;
             this.requestUpdate('status');
             this.requestUpdate('lastActivity');
-            this.sendEvent(SocketEvent.CLOSE);
+            this.sendEvent(ConnectionEvent.CLOSE);
         });
         this.connection.addEventListener('error', (e) => {
             var _a;
@@ -134,7 +129,7 @@ let ConnectorComponent = class ConnectorComponent extends LitElement {
             });
             this.requestUpdate('status');
             this.requestUpdate('lastActivity');
-            this.sendEvent(SocketEvent.ERROR);
+            this.sendEvent(ConnectionEvent.ERROR);
         });
         this.connection.addEventListener(BlenderEvent.BLENDER_MESSAGE, (e) => {
             if (this.sceneViewEl) {
@@ -149,7 +144,7 @@ let ConnectorComponent = class ConnectorComponent extends LitElement {
         });
     }
     sendEvent(type) {
-        const event = new SocketEvent(type, { bubbles: true, composed: true, cancelable: true });
+        const event = new ConnectionEvent(type, { bubbles: true, composed: true, cancelable: true });
         event.component = this;
         event.connection = this.connection;
         this.dispatchEvent(event);

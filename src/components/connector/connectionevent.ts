@@ -2,7 +2,7 @@ import { ConnectorComponent } from './connector';
 import { Connection } from '../../connection';
 import { BlenderEvent } from '../../blender-event';
 
-export class SocketEvent extends Event {
+export class ConnectionEvent extends Event {
     public static OPEN: string = 'opensocket';
 
     public static CLOSE: string = 'closesocket';

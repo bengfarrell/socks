@@ -1,8 +1,8 @@
 import { BlenderEvent } from '../../blender-event';
-export class SocketEvent extends Event {
+export class ConnectionEvent extends Event {
 }
-SocketEvent.OPEN = 'opensocket';
-SocketEvent.CLOSE = 'closesocket';
-SocketEvent.ERROR = 'socketerror';
-SocketEvent.MESSAGE = BlenderEvent.BLENDER_MESSAGE;
+ConnectionEvent.OPEN = 'opensocket';
+ConnectionEvent.CLOSE = 'closesocket';
+ConnectionEvent.ERROR = 'socketerror';
+ConnectionEvent.MESSAGE = BlenderEvent.BLENDER_MESSAGE;
 //# sourceMappingURL=connectionevent.js.map

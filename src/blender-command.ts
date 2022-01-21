@@ -29,6 +29,14 @@ export interface DeleteParams {
     target: string | string[],
 }
 
+export interface CloneParams {
+    // target of clone (object name)
+    target: string | string[],
+
+    // use template if target is not found
+    template: string,
+}
+
 export interface UpdateParams {
     // target of transforms (object name)
     target: string | string[],
@@ -59,6 +67,16 @@ interface UpdateCommand {
     template?: string,
 }
 
+interface CloneCommand {
+    command: 'update',
+
+    // target of clone (object name)
+    target: string[],
+
+    // use template if target is not found
+    template: string,
+}
+
 interface DeleteCommand {
     command: 'delete',
 
@@ -79,6 +97,15 @@ export class BlenderCommand {
         return {
             command: 'selectioninfo',
         }
+    }
+
+    static clone(params: CloneParams ): CloneCommand {
+        const command: CloneCommand = {
+            command: 'update',
+            target: Array.isArray(params.target) ? params.target : [params.target],
+            template: params.template,
+        };
+        return command;
     }
 
     static update(params: UpdateParams): UpdateCommand {
