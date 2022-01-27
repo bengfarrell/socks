@@ -34,11 +34,12 @@ class SceneGraphInterface:
     def update(self, cmd):
         try:
             targetNames = cmd['target']
-            template = None
-            if 'template' in cmd:
-                template = cmd['template']
 
-            targets = self.getTargets(targetNames, template)
+            cloneopts = None
+            if 'clone' in cmd:
+                cloneopts = cmd['clone']
+
+            targets = self.getTargets(targetNames, cloneopts)
 
             if targets == None:
                 return
@@ -83,8 +84,21 @@ class SceneGraphInterface:
         except KeyError as e:
             print('Key Error for', e)
 
-    def getTargets(self, names, template):
+    def getTargets(self, names, cloneopts):
         try:
+            clonesleep = -1
+            linked = False
+            template = None
+            if cloneopts:
+                if 'sleep' in cloneopts:
+                    clonesleep = cloneopts['sleep']
+
+                if 'template' in cloneopts:
+                    template = cloneopts['template']
+
+                if 'linked' in cloneopts:
+                    linked = cloneopts['linked']
+
             selectionIndx = []
             selection = [o for o in bpy.context.scene.objects if o.select_get()]
             for indx, name in enumerate(names):
@@ -101,23 +115,29 @@ class SceneGraphInterface:
                             src_obj = selection[0]
                         else:
                             src_obj = bpy.data.objects[template]
-                        new_obj = src_obj.copy()
-                        new_obj.name = name
-                        new_obj.data = src_obj.data.copy()
-                        new_obj.animation_data_clear()
-                        bpy.context.collection.objects.link(new_obj)
-                        names[indx] = new_obj
-                        # Blender gets crashy when we clone to quickly
-                        time.sleep(.1)
+
+                        names[indx] = self.duplicate(src_obj, linked)
+                        if clonesleep != -1:
+                            time.sleep(clonesleep)
 
             for indx in selectionIndx:
                 while len(selection) > 0:
+                    print(indx, len(selection))
                     names.insert(indx, selection.pop())
 
             return names
         except NameError as e:
             print(e)
             return []
+
+    def duplicate(self, obj, linked):
+        obj_copy = obj.copy()
+        if not linked:
+            obj_copy.data = obj_copy.data.copy()
+        if not linked and obj_copy.animation_data:
+            obj_copy.animation_data.action = obj_copy.animation_data.action.copy()
+        bpy.context.collection.objects.link(obj_copy)
+        return obj_copy
 
     def transform(self, obj, target):
         try:

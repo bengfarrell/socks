@@ -5,16 +5,22 @@
 </head>
 <body>
 <h1>Cloning Demo</h1>
- <p>Use the arrow keys to create a clone and move the default blender cube. Hold down shift to move in the Z direction</p>
+    <socks-connector></socks-connector>
+    <p>Use the arrow keys to create a clone and move the selected object. Hold down shift to move in the Z direction</p>
+    <p>Or do a bulk/quick clone of the selected object in Blender</p>
+    <button id="quickclone">Quick Clone</button>
+    <br /><br />
+    <label>Linked? </label><input id="linked" type="checkbox" />
+    <br /><br />
+    <label>Sleep? </label><input id="sleep" type="checkbox" /><input type="number" id="sleeptime" value=".2" style="width: 50px"/> seconds between clones.
 
-<socks-connector showactivity></socks-connector>
 <script type="module" src="../src/components/connector/index.js"></script>
 <script type="module">
-    import { SocketEvent } from '../src/components/connector/connectionevent.js';
+    import { ConnectionEvent } from '../src/components/connector/connectionevent.js';
     import { BlenderCommand, CURRENT_SELECTION } from '../src/blender-command';
 
     let conn;
-    document.body.addEventListener(SocketEvent.OPEN, (event) => {
+    document.body.addEventListener(ConnectionEvent.OPEN, (event) => {
         conn = event.connection;
     });
 
@@ -22,6 +28,17 @@
     const move = 3;
     const delta = [0 , 0,  0];
     document.addEventListener('keydown', (event) => {
+        let sleep = undefined;
+        let linked = false;
+        if (document.getElementById("sleep").checked) {
+            sleep = Number(document.getElementById("sleeptime").value)
+        }
+        if (document.getElementById("linked").checked) {
+            linked = true;
+        }
+        const queue = [];
+        const cloneOpts = { template: CURRENT_SELECTION };
+
         switch (event.key) {
             case "ArrowLeft":
                 if (event.shiftKey) {
@@ -60,7 +77,7 @@
         conn.send(BlenderCommand.update(
             {
                 target: `cubey-${counter}`,
-                template: CURRENT_SELECTION,
+                clone: cloneOpts,
                 transforms: [
                         {
                             transform: 'translate',
@@ -68,6 +85,40 @@
                         }
                     ]
             }));
+    });
+
+    document.getElementById('quickclone').addEventListener('click', () => {
+        let sleep = undefined;
+        let linked = false;
+        if (document.getElementById("sleep").checked) {
+            sleep = Number(document.getElementById("sleeptime").value)
+        }
+        if (document.getElementById("linked").checked) {
+            linked = true;
+        }
+        const queue = [];
+        const cloneOpts = { template: CURRENT_SELECTION };
+        if (sleep) {
+            cloneOpts.sleep = sleep;
+        }
+        if (linked) {
+            cloneOpts.linked = linked;
+        }
+
+        for (let c = 0; c < 100; c++) {
+            queue.push(BlenderCommand.update(
+                {
+                    target: `cubey-${c}`,
+                    clone: cloneOpts,
+                    transforms: [
+                        {
+                            transform: 'translate',
+                            x: 0, y: c * 2, z: 0,
+                        }
+                    ]
+                }));
+        }
+        conn.send(queue);
     });
 </script>
 </body>

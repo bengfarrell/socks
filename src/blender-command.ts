@@ -6,6 +6,17 @@ export interface Transform {
     z?: number;
 }
 
+export interface CloneOptions {
+    // use template if target is not found
+    template: string,
+
+    // sleep between clones, protects against cloning too quickly and crashing
+    sleep?: number,
+
+    // if linking to create clones
+    linked?: boolean,
+}
+
 export interface Translate extends Transform {
     transform: 'translate';
 }
@@ -33,8 +44,8 @@ export interface CloneParams {
     // target of clone (object name)
     target: string | string[],
 
-    // use template if target is not found
-    template: string,
+    // clone options
+    clone: CloneOptions
 }
 
 export interface UpdateParams {
@@ -47,8 +58,8 @@ export interface UpdateParams {
     // keyframe if animating
     keyframe?: number,
 
-    // use template if target is not found
-    template?: string,
+    // clone options
+    clone?: CloneOptions
 }
 
 interface UpdateCommand {
@@ -63,8 +74,8 @@ interface UpdateCommand {
     // keyframe if animating
     keyframe?: number,
 
-    // use template if target is not found
-    template?: string,
+    // clone options
+    clone?: CloneOptions
 }
 
 interface CloneCommand {
@@ -73,8 +84,8 @@ interface CloneCommand {
     // target of clone (object name)
     target: string[],
 
-    // use template if target is not found
-    template: string,
+    // clone options
+    clone?: CloneOptions
 }
 
 interface DeleteCommand {
@@ -103,12 +114,15 @@ export class BlenderCommand {
         const command: CloneCommand = {
             command: 'update',
             target: Array.isArray(params.target) ? params.target : [params.target],
-            template: params.template,
+            clone: { ...params.clone },
         };
         return command;
     }
 
     static update(params: UpdateParams): UpdateCommand {
+        if (!params.transforms) {
+            this.clone(params as CloneParams);
+        }
         const command: UpdateCommand = {
             command: 'update',
             target: Array.isArray(params.target) ? params.target : [params.target],
@@ -117,8 +131,8 @@ export class BlenderCommand {
         if (params.keyframe) {
             command.keyframe = params.keyframe;
         }
-        if (params.template) {
-            command.template = params.template;
+        if (params.clone) {
+            command.clone = { ...params.clone };
         }
         return command;
     }

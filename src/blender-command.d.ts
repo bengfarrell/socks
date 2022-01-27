@@ -5,11 +5,19 @@ export interface Transform {
     y?: number;
     z?: number;
 }
+export interface CloneOptions {
+    template: string;
+    sleep?: number;
+    linked?: boolean;
+}
 export interface Translate extends Transform {
     transform: 'translate';
 }
 export interface Scale extends Transform {
     transform: 'scale';
+}
+export interface Origin extends Transform {
+    transform: 'origin';
 }
 export interface Rotate extends Transform {
     transform: 'rotate';
@@ -19,18 +27,27 @@ export interface Rotate extends Transform {
 export interface DeleteParams {
     target: string | string[];
 }
+export interface CloneParams {
+    target: string | string[];
+    clone: CloneOptions;
+}
 export interface UpdateParams {
     target: string | string[];
-    transforms: (Translate | Scale | Rotate) | (Translate | Scale | Rotate)[];
+    transforms: (Translate | Scale | Rotate | Origin) | (Translate | Scale | Rotate | Origin)[];
     keyframe?: number;
-    template?: string;
+    clone?: CloneOptions;
 }
 interface UpdateCommand {
     command: 'update';
     target: string[];
-    transforms: (Translate | Scale | Rotate)[];
+    transforms: (Translate | Scale | Rotate | Origin)[];
     keyframe?: number;
-    template?: string;
+    clone?: CloneOptions;
+}
+interface CloneCommand {
+    command: 'update';
+    target: string[];
+    clone?: CloneOptions;
 }
 interface DeleteCommand {
     command: 'delete';
@@ -44,6 +61,7 @@ export declare class BlenderCommand {
     static requestSelection(): {
         command: string;
     };
+    static clone(params: CloneParams): CloneCommand;
     static update(params: UpdateParams): UpdateCommand;
     static delete(params: DeleteParams): DeleteCommand;
 }

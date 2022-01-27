@@ -1,6 +1,6 @@
 import { ConnectorComponent } from './connector';
 import { Connection } from '../../connection';
-export declare class SocketEvent extends Event {
+export declare class ConnectionEvent extends Event {
     static OPEN: string;
     static CLOSE: string;
     static ERROR: string;

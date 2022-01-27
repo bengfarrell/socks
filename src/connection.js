@@ -35,7 +35,7 @@ export class Connection extends EventEmitter {
         else {
             params.selected = data || [];
         }
-        this.dispatchEvent(new BlenderEvent(BlenderEvent.BLENDER_MESSAGE, Object.assign({ bubbles: true, composed: true, cancellable: true }, params)));
+        this.dispatchEvent(new BlenderEvent(BlenderEvent.BLENDER_MESSAGE, { bubbles: true, composed: true, cancellable: true, ...params }));
     }
     send(commands) {
         if (this.connected) {

@@ -14,11 +14,14 @@ export class BlenderCommand {
         const command = {
             command: 'update',
             target: Array.isArray(params.target) ? params.target : [params.target],
-            template: params.template,
+            clone: { ...params.clone },
         };
         return command;
     }
     static update(params) {
+        if (!params.transforms) {
+            this.clone(params);
+        }
         const command = {
             command: 'update',
             target: Array.isArray(params.target) ? params.target : [params.target],
@@ -27,8 +30,8 @@ export class BlenderCommand {
         if (params.keyframe) {
             command.keyframe = params.keyframe;
         }
-        if (params.template) {
-            command.template = params.template;
+        if (params.clone) {
+            command.clone = { ...params.clone };
         }
         return command;
     }
