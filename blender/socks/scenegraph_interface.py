@@ -122,7 +122,6 @@ class SceneGraphInterface:
 
             for indx in selectionIndx:
                 while len(selection) > 0:
-                    print(indx, len(selection))
                     names.insert(indx, selection.pop())
 
             return names

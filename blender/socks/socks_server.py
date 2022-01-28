@@ -1,3 +1,11 @@
+# WebSocket server for Blender
+# Ben Farrell
+
+# Heavily lifted from:
+# Copyright 2015 Jonathan Giroux (Bloutiouf)
+# Licensed under MIT (http://opensource.org/licenses/MIT)
+# Originally found at https://github.com/KoltesDigital/websocket-server-for-blender
+
 import bpy
 import json
 import mathutils
