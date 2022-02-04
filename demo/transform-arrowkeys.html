@@ -19,11 +19,11 @@
     <socks-connector showactivity></socks-connector>
     <script type="module" src="../src/components/connector/index.js"></script>
     <script type="module">
-        import { SocketEvent } from '../src/components/connector/connectionevent.js';
+        import { ConnectionEvent } from '../src/components/connector/connectionevent.js';
         import { BlenderCommand, CURRENT_SELECTION } from '../src/blender-command';
 
         let conn;
-        document.body.addEventListener(SocketEvent.OPEN, (event) => {
+        document.body.addEventListener(ConnectionEvent.OPEN, (event) => {
             conn = event.connection;
         });
 

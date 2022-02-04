@@ -5,6 +5,12 @@ export class BlenderCommand {
             command: 'sceneinfo',
         };
     }
+    static requestBonesForArmature(name) {
+        return {
+            command: 'armatureinfo',
+            name
+        };
+    }
     static requestSelection() {
         return {
             command: 'selectioninfo',

@@ -1,11 +1,18 @@
 export class BlenderEvent extends Event {
     constructor(type, props) {
         super(type, props);
-        if (props.scene) {
-            this.scene = props.scene;
+        this.messageType = props.data.messagetype;
+        if (props.data.message.scene) {
+            this.scene = props.data.scene;
         }
-        if (props.selected) {
-            this.selected = props.selected;
+        if (props.data.message.selected) {
+            this.selected = props.data.selected;
+        }
+        if (props.data.message.bones) {
+            this.bones = props.data.message.bones;
+        }
+        if (props.data.message.armature) {
+            this.armature = props.data.message.armature;
         }
     }
 }

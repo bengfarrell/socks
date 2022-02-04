@@ -1,0 +1,86 @@
+<html>
+<head>
+    <meta charSet='UTF-8'>
+    <title>Armature Demo</title>
+</head>
+<body>
+<h1>Armature Demo</h1>
+<p>
+    Use arrow keys to move. Hold down shift for z-axis. Hit R key to return to center
+    <select id="bonesmenu">
+    </select>
+</p>
+
+<socks-connector showactivity></socks-connector>
+<script type='module' src='../src/components/connector/index.js'></script>
+<script type='module'>
+    import { ConnectionEvent } from '../src/components/connector/connectionevent.js';
+    import { BlenderCommand, CURRENT_SELECTION } from '../src/blender-command';
+
+    let conn;
+    document.body.addEventListener(ConnectionEvent.OPEN, (event) => {
+        conn = event.connection;
+        conn.send(BlenderCommand.requestBonesForArmature('RIG-anonymous_duck'));
+
+        conn.addEventListener(ConnectionEvent.MESSAGE, (event) => {
+            console.log(event.bones);
+            document.getElementById("bonesmenu").innerHTML = event.bones.map( bone => `<option>${bone}</option>`)
+        })
+    });
+
+    let keyframe = 0;
+    document.addEventListener('keydown', (event) => {
+        const delta = [0, 0, 0];
+        switch (event.key) {
+            case "ArrowLeft":
+                if (event.shiftKey) {
+                    delta[2] -= -0.01;
+                } else {
+                    delta[0] -= -0.01;
+                }
+                keyframe += 1;
+                break;
+            case "ArrowRight":
+                if (event.shiftKey) {
+                    delta[2] += 0.01;
+                } else {
+                    delta[0] += 0.01;
+                }
+                keyframe += 1;
+                break;
+            case "ArrowUp":
+                if (event.shiftKey) {
+                    delta[2] -= 0.01;
+                } else {
+                    delta[1] -= 0.01;
+                }
+                keyframe += 1;
+                break;
+            case "ArrowDown":
+                if (event.shiftKey) {
+                    delta[2] += 0.01;
+                } else {
+                    delta[1] += 0.01;
+                }
+                keyframe += 1;
+                break;
+        }
+
+        conn.send(BlenderCommand.update(
+            {
+                target: { armature: 'RIG-anonymous_duck', posebone: document.querySelector('select').value },
+                // keyframe,
+                transforms:
+                    [
+                        {
+                            transform: 'translate',
+                            x: delta[0], y: delta[1], z: delta[2],
+                            relative: true,
+                        },
+                    ]
+            }));
+    });
+</script>
+</body>
+
+</html>

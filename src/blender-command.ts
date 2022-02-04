@@ -104,6 +104,13 @@ export class BlenderCommand {
         }
     }
 
+    static requestBonesForArmature(name: string) {
+        return {
+            command: 'armatureinfo',
+            name
+        }
+    }
+
     static requestSelection() {
         return {
             command: 'selectioninfo',

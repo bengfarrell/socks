@@ -58,6 +58,10 @@ export declare class BlenderCommand {
     static requestScene(): {
         command: string;
     };
+    static requestBonesForArmature(name: string): {
+        command: string;
+        name: string;
+    };
     static requestSelection(): {
         command: string;
     };

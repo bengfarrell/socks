@@ -15,8 +15,12 @@ class SceneGraphInterface:
         elif cmd['command'] == 'selectioninfo':
             self.sendSelection()
 
+        elif cmd['command'] == 'armatureinfo':
+            if 'name' in cmd:
+                self.sendArmature(cmd['name'])
+
         elif cmd['command'] == 'delete':
-            print("letter is Grapes")
+            print("TODO: Delete")
 
         else:
             print('Command not found:', cmd['command'])
@@ -31,15 +35,20 @@ class SceneGraphInterface:
         data = self.get_selection()
         self.socketApp.send(data)
 
+    def sendArmature(self, name):
+        if name in bpy.data.objects:
+            data = self.get_armature(name)
+            self.socketApp.send(data)
+
     def update(self, cmd):
         try:
-            targetNames = cmd['target']
+            unresolved_targets = cmd['target']
 
             cloneopts = None
             if 'clone' in cmd:
                 cloneopts = cmd['clone']
 
-            targets = self.getTargets(targetNames, cloneopts)
+            targets = self.getTargets(unresolved_targets, cloneopts)
 
             if targets == None:
                 return
@@ -84,7 +93,7 @@ class SceneGraphInterface:
         except KeyError as e:
             print('Key Error for', e)
 
-    def getTargets(self, names, cloneopts):
+    def getTargets(self, unresolved, cloneopts):
         try:
             clonesleep = -1
             linked = False
@@ -101,14 +110,17 @@ class SceneGraphInterface:
 
             selectionIndx = []
             selection = [o for o in bpy.context.scene.objects if o.select_get()]
-            for indx, name in enumerate(names):
+            for indx, name in enumerate(unresolved):
                 if name == '__$current_selection__':
                     selectionIndx.append(indx)
-                    del names[indx]
+                    del unresolved[indx]
                 else:
-                    if name in bpy.data.objects:
+                    if type(name) == str and name in bpy.data.objects:
                         # object is found, add to list
-                        names[indx] = bpy.data.objects[name]
+                        unresolved[indx] = bpy.data.objects[name]
+                    elif type(name) != str:
+                        # target is an object
+                        unresolved[indx] = self.resolve_complex_target(name)
                     elif template:
                         # object not found, clone via template
                         if template == '__$current_selection__':
@@ -116,18 +128,26 @@ class SceneGraphInterface:
                         else:
                             src_obj = bpy.data.objects[template]
 
-                        names[indx] = self.duplicate(src_obj, linked)
+                        unresolved[indx] = self.duplicate(src_obj, linked)
                         if clonesleep != -1:
                             time.sleep(clonesleep)
 
             for indx in selectionIndx:
                 while len(selection) > 0:
-                    names.insert(indx, selection.pop())
+                    unresolved.insert(indx, selection.pop())
 
-            return names
+            return unresolved
         except NameError as e:
             print(e)
             return []
+
+    def resolve_complex_target(self, target):
+        if 'armature' in target and bpy.data.objects[target['armature']]:
+            armature = bpy.data.objects[target['armature']]
+            if 'posebone' in target:
+                return armature.pose.bones[target['posebone']]
+            return None
+        return None
 
     def duplicate(self, obj, linked):
         obj_copy = obj.copy()
@@ -155,19 +175,38 @@ class SceneGraphInterface:
 
 
     def get_selection(self):
-        return [o.name for o in bpy.context.scene.objects if o.select_get()]
+        return {
+            "messagetype": "selectioninfo",
+            "message": [o.name for o in bpy.context.scene.objects if o.select_get()]
+        }
+
+    def get_armature(self, name):
+        arm = bpy.data.objects[name]
+        bones = []
+        for indx, bone in enumerate(arm.pose.bones):
+            bones.append(bone.name)
+        return {
+            "messagetype": "armatureinfo",
+            "message": {
+                "bones": bones,
+                "armature": name
+            }
+        }
 
     def get_scene(self, scene):
         return {
-            "scene": scene.name,
-            "camera": scene.camera and scene.camera.name,
-            "fps": scene.render.fps / scene.render.fps_base,
-            "frame": scene.frame_current,
-            "frameEnd": scene.frame_end,
-            "frameStart": scene.frame_start,
-            "gravity": scene.gravity,
-            "objects": list(object.name for object in scene.objects),
-            "timelineMarkers": list(scene.timeline_markers),
-            "world": scene.world and scene.world.name,
-            "selected": self.get_selection()
+            "messagetype": "sceneinfo",
+            "message": {
+                "scene": scene.name,
+                "camera": scene.camera and scene.camera.name,
+                "fps": scene.render.fps / scene.render.fps_base,
+                "frame": scene.frame_current,
+                "frameEnd": scene.frame_end,
+                "frameStart": scene.frame_start,
+                "gravity": scene.gravity,
+                "objects": list(object.name for object in scene.objects),
+                "timelineMarkers": list(scene.timeline_markers),
+                "world": scene.world and scene.world.name,
+                "selected": self.get_selection()
+            }
         }
